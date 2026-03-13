@@ -6,20 +6,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movies!</title>
     <style>
-        /* Part 3: Your styling goes here */
+        body {
+            font-family: 'Trebuchet MS', sans-serif
+        }
+
+        img {
+            border-radius: 32px;
+            max-width: 100%;
+        }        
+
+        h1 {
+            font-size: 250%;
+            font-weight: bold;
+            margin: 4px 2px;
+        }
+
+        article {
+            background-color: bisque;
+            border-radius: 32px;
+            margin: 2vw;
+            padding: 12px;
+            box-shadow: 5px 5px 5px #ffc178;
+            border-top: 1px black solid;
+        }
+
+        span {
+            margin-right: 8px;
+            display: inline-block;
+        }
+
+        .genre {
+            background-color: antiquewhite;
+            padding: 12px 16px;
+            font-weight: 500;
+            border-radius: 32px;
+            border: 1px black solid;
+        }
     </style>
     <script>
         function reverseString(s) {
             return s.split("").reverse().join("");
         }
 
+        function loadMovies(movies) {
+            console.log(movies);
+            let movieArticles = [];
+            movies.forEach(movie => {
+                const article = document.createElement('article');
+                
+                article.appendChild(getPoster(movie));
+                article.appendChild(getTitle(movie));
+                article.appendChild(getInfoParagraph(movie));
+                article.appendChild(getGenres(movie));
+                article.appendChild(getPlot(movie));
+
+                article.appendChild(getHeadline("Directors"));
+                article.appendChild(getPeople(movie, 'Directors'))
+                article.appendChild(getHeadline("Writers"));
+                article.appendChild(getPeople(movie, 'Writers'))
+                article.appendChild(getHeadline("Actors"));
+                article.appendChild(getPeople(movie, 'Actors'))
+
+
+                movieArticles.push(article);               
+            });
+
+            return movieArticles;
+        }
+
+        function getPoster(movie) {
+            const img = document.createElement('img');
+            img.src = movie.Poster;
+            img.alt = `${movie.Title} Poster`;
+            return img;
+        }
+
+        function getPlot(movie){
+            const paragraph = document.createElement('p');
+            paragraph.textContent = movie.Plot;
+            return paragraph;
+        }
+
+        function getTitle(movie) {
+            const title = document.createElement('h1');
+            title.textContent = movie.Title;
+            return title;
+        }
+
+        function getHeadline(word){
+            const h2 = document.createElement('h2');
+            h2.textContent = word;
+            return h2;
+        }
+
+        function getInfoParagraph(movie) {
+            const infoP = document.createElement('p');
+
+            const runtimeSpan = document.createElement('span');
+            runtimeSpan.textContent = `Runtime: ${Math.trunc(movie.Runtime / 60)}h ${movie.Runtime % 60}m`;
+            infoP.appendChild(runtimeSpan);
+
+            const bulletSpan = document.createElement('span');
+            bulletSpan.textContent = '\u2022';
+            infoP.appendChild(bulletSpan);
+
+            const releasedSpan = document.createElement('span');
+            const releaseDate = new Date(movie.Released);
+            releasedSpan.textContent = `Released on ${releaseDate.toLocaleDateString()}`;
+            infoP.appendChild(releasedSpan);
+            
+            return infoP;
+        }
+
+        function getGenres(movie) {
+            const genreParagraph = document.createElement('p')
+            movie.Genres.forEach(genre => {
+                const genreSpan = document.createElement('span')
+                genreSpan.className = 'genre'
+                genreSpan.textContent = genre
+                genreParagraph.appendChild(genreSpan)
+            })
+            
+            return genreParagraph;
+        }
+
+        function getPeople(movie, type){
+            const list = document.createElement('ul');
+            movie[type].forEach(person => {
+                const li = document.createElement('li');
+                li.textContent = person;
+                list.appendChild(li);
+            });
+            
+            return list;
+        }
+
+
         window.onload = function () {
             const xhr = new XMLHttpRequest()
             xhr.onload = function () {
                 const bodyElement = document.querySelector("body")
                 if (xhr.status == 200) {
-		            /* Part 2: Build the HTML elements here and append them to the body */ 
-                    bodyElement.append(reverseString(xhr.responseText))
+                    movieArticles = loadMovies(JSON.parse(xhr.responseText));
+                    movieArticles.forEach(article => bodyElement.appendChild(article))
                 } else {
                     bodyElement.append("Daten konnten nicht geladen werden, Status " + xhr.status + " - " + xhr.statusText)
                 }
